@@ -1,0 +1,26 @@
+{
+  "name": "system-trace",
+  "version": "0.0.1",
+  "description": "Traces dependencies of a Loader",
+  "main": "trace.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stealjs/system-trace.git"
+  },
+  "keywords": [
+    "stealjs"
+  ],
+  "author": "Bitovi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stealjs/system-trace/issues"
+  },
+  "homepage": "https://github.com/stealjs/system-trace",
+  "devDependencies": {
+    "steal": "^0.11.0",
+    "steal-qunit": "^0.1.1"
+  }
+}

@@ -1,0 +1,128 @@
+var QUnit = require("steal-qunit");
+var loader = require("@loader");
+
+function makeLoader(){
+	this.loader = loader.clone();
+	this.loader.baseURL = "./";
+	this.loader.paths = loader.paths;
+	applyTraceExtension(this.loader);
+}
+
+function setupBasics(assert){
+	makeLoader.call(this);
+
+	var done = assert.async();
+	this.loader.import("tests/basics/main").then(function(){
+		done();
+	}, assertFailure("Failed to load"));
+}
+
+function assertFailure(reason){
+	var doAssert = function(reason){
+		QUnit.ok(false, reason);
+	};
+	return reason ? doAssert.bind(null, "Failure") : doAssert(reason);
+}
+
+
+QUnit.module("getDependencies", {
+	setup: setupBasics
+});
+
+
+QUnit.test("Gets the dependencies of a module", function(){
+	var loader = this.loader;
+
+	QUnit.deepEqual(loader.getDependencies("tests/basics/main"),
+					["tests/basics/b", "tests/basics/c"],
+					"Correctly gets the dependencies for the main");
+
+	QUnit.deepEqual(loader.getDependencies("tests/basics/c"),
+					["tests/basics/d"],
+					"Correctly gets the dependencies for the c module");
+
+
+});
+
+QUnit.module("getDependants", {
+	setup: setupBasics
+});
+
+QUnit.test("Gets modules that are dependants", function(){
+	var loader = this.loader;
+
+	QUnit.deepEqual(loader.getDependants("tests/basics/b"), ["tests/basics/main"],
+										 "main is the only dependant");
+	var dDeps = loader.getDependants("tests/basics/d").sort();
+	QUnit.deepEqual(dDeps, ["tests/basics/c","tests/basics/e"],
+					"c and e are dependants");
+	QUnit.deepEqual(loader.getDependants("tests/basics/main"), [],
+										 "main has no dependants");
+
+});
+
+QUnit.module("getModuleLoad", {
+	setup: setupBasics
+});
+
+QUnit.test("Gets the module's load object", function(){
+	var loader = this.loader;
+
+	var load = loader.getModuleLoad("tests/basics/b");
+
+	QUnit.ok(load.source, "Has source");
+});
+
+QUnit.module("preventModuleExecution", {
+	setup: function(assert){
+		makeLoader.call(this);
+
+		var done = assert.async();
+		this.loader.preventModuleExecution = true;
+		this.loader.import("tests/basics/prevent_me").then(function(){
+			done();
+		}, assertFailure("Failed to load"));
+	}
+});
+
+QUnit.test("Prevents a module from executing", function(){
+	var loader = this.loader;
+
+	var value = loader.get("tests/basics/prevent_me")["default"];
+
+	QUnit.equal(typeof value, "undefined", "The module is an empty object");
+	QUnit.ok(loader.get("tests/basics/d"), "the d module loaded even though its parent is an es6 module");
+});
+
+QUnit.module("preventModuleExecution with babel", {
+	setup: function(assert){
+		makeLoader.call(this);
+
+		var done = assert.async();
+		this.loader.preventModuleExecution = true;
+		this.loader.transpiler = "babel";
+		this.loader.import("tests/basics/prevent_me").then(function(){
+			done();
+		}, assertFailure("Failed to load"));
+	}
+});
+
+QUnit.test("Prevents a module from executing", function(){
+	var loader = this.loader;
+
+	var value = loader.get("tests/basics/prevent_me")["default"];
+
+	QUnit.equal(typeof value, "undefined", "The module is an empty object");
+	QUnit.ok(loader.get("tests/basics/d"), "the d module loaded even though its parent is an es6 module");
+});
+
+QUnit.module("getBundles", {
+	setup: setupBasics
+});
+
+QUnit.test("Gets the top-level module", function(){
+	var loader = this.loader;
+
+	QUnit.deepEqual(loader.getBundles("tests/basics/d"), ["tests/basics/main"],
+				"main is the bundle");
+});
