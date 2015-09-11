@@ -5,12 +5,13 @@ function applyTraceExtension(loader){
 
 	loader._traceData = {
 		deps: {},
+		dependencies: {},
 		loads: {},
 		parentMap: {}
 	};
 
 	loader.getDependencies = function(moduleName){
-		return this._traceData.deps[moduleName];
+		return this._traceData.dependencies[moduleName];
 	};
 	loader.getDependants = function(moduleName){
 		var deps = [];
@@ -49,9 +50,11 @@ function applyTraceExtension(loader){
 		var loads = loader.loads;
 		var name, load;
 		eachOf(loads, function(name, load){
-			var dependencies = loader._traceData.deps[name] = [];
+			var deps = loader._traceData.deps[name] = [];
+			var dependencies = loader._traceData.dependencies[name] = [];
 			var depName;
 			eachOf(load.depMap, function(depName, val){
+				deps.push(depName);
 				dependencies.push(val);
 			});
 		});
