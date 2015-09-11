@@ -126,3 +126,22 @@ QUnit.test("Gets the top-level module", function(){
 	QUnit.deepEqual(loader.getBundles("tests/basics/d"), ["tests/basics/main"],
 				"main is the bundle");
 });
+
+QUnit.module("production", {
+	setup: function(assert){
+		makeLoader.call(this);
+
+		this.loader.baseURL = "./tests/production";
+		this.loader.bundles = {"bundles/main":["main"]};
+		this.loader.loadBundles = true;
+
+		var done = assert.async();
+		this.loader.import("main").then(function(){
+			done();
+		}, assertFailure("Failed to load"));
+	}
+});
+
+QUnit.test("Loads normally", function(){
+	QUnit.ok(true, "it loaded!");
+});
