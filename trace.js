@@ -61,6 +61,11 @@ function applyTraceExtension(loader){
 	var limport = loader.import;
 	loader.import = function(){
 		var loader = this;
+
+		if(this.loadBundles) {
+			return limport.apply(this, arguments);
+		}
+
 		var amTracing = !!loader.trace;
 		loader.trace = true;
 		return limport.apply(this, arguments).then(function(r){
@@ -121,7 +126,8 @@ function applyTraceExtension(loader){
 	loader.instantiate = function(load){
 		this._traceData.loads[load.name] = load;
 		var loader = this;
-		return instantiate.apply(this, arguments).then(function(result){
+		var instantiatePromise = Promise.resolve(instantiate.apply(this, arguments));
+		return instantiatePromise.then(function(result){
 			if(loader.preventModuleExecution && !isEsLoad(load)) {
 				return {
 					deps: result && result.deps,
