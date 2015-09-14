@@ -37,6 +37,13 @@ function applyTraceExtension(loader){
 		});
 		return bundles;
 	};
+	loader._allowModuleExecution = {};
+	loader.allowModuleExecution = function(name){
+		var loader = this;
+		return loader.normalize(name).then(function(name){
+			loader._allowModuleExecution[name] = true;
+		});
+	};
 
 	function eachOf(obj, callback){
 		var name, val;
@@ -131,7 +138,8 @@ function applyTraceExtension(loader){
 		var loader = this;
 		var instantiatePromise = Promise.resolve(instantiate.apply(this, arguments));
 		return instantiatePromise.then(function(result){
-			if(loader.preventModuleExecution && !isEsLoad(load)) {
+			if(loader.preventModuleExecution && !isEsLoad(load) &&
+			  !loader._allowModuleExecution[load.name]) {
 				return {
 					deps: result && result.deps,
 					execute: emptyExecute
