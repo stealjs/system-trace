@@ -4,14 +4,12 @@ function applyTraceExtension(loader){
 	}
 
 	loader._traceData = {
-		deps: {},
-		dependencies: {},
 		loads: {},
 		parentMap: {}
 	};
 
 	loader.getDependencies = function(moduleName){
-		return this._traceData.dependencies[moduleName];
+		return this.getModuleLoad(moduleName).metadata.dependencies;
 	};
 	loader.getDependants = function(moduleName){
 		var deps = [];
@@ -52,40 +50,6 @@ function applyTraceExtension(loader){
 		}
 	}
 
-	// Get a module's dependencies from the loader.load object
-	function applyLoads(loader){
-		var loads = loader.loads;
-		var name, load;
-		eachOf(loads, function(name, load){
-			var deps = loader._traceData.deps[name] = [];
-			var dependencies = loader._traceData.dependencies[name] = [];
-			var depName;
-			eachOf(load.depMap, function(depName, val){
-				deps.push(depName);
-				dependencies.push(val);
-			});
-		});
-		delete loader.loads;
-	}
-
-	var limport = loader.import;
-	loader.import = function(){
-		var loader = this;
-
-		if(this.loadBundles) {
-			return limport.apply(this, arguments);
-		}
-
-		var amTracing = !!loader.trace;
-		loader.trace = true;
-		return limport.apply(this, arguments).then(function(r){
-			if(!amTracing)
-				loader.trace = false;
-			applyLoads(loader);
-			return r;
-		});
-	};
-
 	var normalize = loader.normalize;
 	loader.normalize = function(name, parentName){
 		var normalizePromise = normalize.apply(this, arguments);
@@ -117,6 +81,14 @@ function applyTraceExtension(loader){
 		return passThroughModules[load.name] || this._allowModuleExecution[load.name];
 	};
 
+	var map = [].map || function(callback){
+		var res = [];
+		for(var i = 0, len = this.length; i < len; i++) {
+			res.push(callback(this[i]));
+		}
+		return res;
+	};
+
 	var transpiledDepsExp = /System\.register\((\[.+?\])\,/;
 	var singleQuoteExp = /'/g;
 	var instantiate = loader.instantiate;
@@ -129,14 +101,26 @@ function applyTraceExtension(loader){
 			var preventExecution = loader.preventModuleExecution &&
 				!isAllowedToExecute.call(loader, load);
 
-			if(preventExecution) {
-				return {
-					deps: result ? result.deps : load.metadata.deps,
-					execute: emptyExecute
-				};
-			}
+			// deps either comes from the instantiate result, or if an
+			// es6 module it was found in the transpile hook.
+			var deps = result ? result.deps : load.metadata.deps;
 
-			return result;
+			return Promise.all(map.call(deps, function(depName){
+				return loader.normalize(depName, load.name);
+			})).then(function(dependencies){
+				load.metadata.deps = deps;
+				load.metadata.dependencies = dependencies;
+
+				if(preventExecution) {
+					return {
+						deps: deps,
+						execute: emptyExecute
+					};
+				}
+
+				return result;
+
+			});
 		}
 
 		return instantiatePromise.then(function(result){
