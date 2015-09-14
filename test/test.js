@@ -81,6 +81,7 @@ QUnit.module("preventModuleExecution", {
 		this.loader.preventModuleExecution = true;
 		this.loader.import("tests/basics/prevent_me").then(function(){
 			done();
+
 		}, assertFailure("Failed to load"));
 	}
 });
@@ -92,6 +93,10 @@ QUnit.test("Prevents a module from executing", function(){
 
 	QUnit.equal(typeof value, "undefined", "The module is an empty object");
 	QUnit.ok(loader.get("tests/basics/d"), "the d module loaded even though its parent is an es6 module");
+
+	var dDeps = loader.getDependencies("tests/basics/prevent_me").sort();
+	QUnit.deepEqual(dDeps, ["tests/basics/main", "tests/basics/prevent_es"],
+					"got the correct dependencies");
 });
 
 QUnit.module("preventModuleExecution with babel", {

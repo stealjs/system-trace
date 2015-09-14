@@ -86,23 +86,6 @@ function applyTraceExtension(loader){
 		});
 	};
 
-	// In order to prevent ES modules from executing we have to overwrite transpile (which is like translate, but happens after instantiate) so that an empty module is returned that only contains the dependencies. We can extract these with a simple regular expression.
-	var transpiledDepsExp = /System\.register\((\[.+?\])\,/;
-	var transpile = loader.transpile;
-	loader.transpile = function(load){
-		var loader = this;
-		var result = transpile.call(this, load);
-
-		return result.then(function(source){
-			if(loader.preventModuleExecution) {
-				var depsSource = transpiledDepsExp.exec(source)[1] || "[]";
-				source = "System.register(" + depsSource + ", function(){" +
-				"return {setters:[],execute:function(){}};});";
-			}
-			return source;
-		});
-	};
-
 	var normalize = loader.normalize;
 	loader.normalize = function(name, parentName){
 		var normalizePromise = normalize.apply(this, arguments);
@@ -125,29 +108,63 @@ function applyTraceExtension(loader){
 		return loader.newModule({});
 	};
 
-	// Determines if a load is an ES load or a load needed to run in order to load ES loads...
-	var isEsLoad = (function(){
-		var opts = { es: true, "es6": true };
-		var special = { traceur: true, babel: true };
-		return function(load){ return opts[load.metadata.format] || special[load.name]; };
-	})();
 
+	var passThroughModules = {
+		traceur: true,
+		babel: true
+	};
+	var isAllowedToExecute = function(load){
+		return passThroughModules[load.name] || this._allowModuleExecution[load.name];
+	};
+
+	var transpiledDepsExp = /System\.register\((\[.+?\])\,/;
+	var singleQuoteExp = /'/g;
 	var instantiate = loader.instantiate;
 	loader.instantiate = function(load){
 		this._traceData.loads[load.name] = load;
 		var loader = this;
 		var instantiatePromise = Promise.resolve(instantiate.apply(this, arguments));
-		return instantiatePromise.then(function(result){
-			if(loader.preventModuleExecution && !isEsLoad(load) &&
-			  !loader._allowModuleExecution[load.name]) {
+
+		function finalizeResult(result){
+			var preventExecution = loader.preventModuleExecution &&
+				!isAllowedToExecute.call(loader, load);
+
+			if(preventExecution) {
 				return {
-					deps: result && result.deps,
+					deps: result ? result.deps : load.metadata.deps,
 					execute: emptyExecute
 				};
 			}
 
 			return result;
+		}
+
+		return instantiatePromise.then(function(result){
+			// This must be es6
+			if(!result) {
+				return loader.transpile(load).then(function(source){
+					load.metadata.transpiledSource = source;
+
+					var depsSource = transpiledDepsExp.exec(source)[1] || "[]";
+					var deps = JSON.parse(depsSource.replace(singleQuoteExp, '"'));
+					load.metadata.deps = deps;
+
+					return finalizeResult(result);
+				});
+			}
+			return finalizeResult(result);
 		});
+	};
+
+	var transpile = loader.transpile;
+	// Allow transpile to be memoized, but only once
+	loader.transpile = function(load){
+		var transpiled = load.metadata.transpiledSource;
+		if(transpiled) {
+			delete load.metadata.transpiledSource;
+			return Promise.resolve(transpiled);
+		}
+		return transpile.apply(this, arguments);
 	};
 }
 
