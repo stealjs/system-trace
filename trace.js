@@ -129,7 +129,8 @@ function applyTraceExtension(loader){
 				return loader.transpile(load).then(function(source){
 					load.metadata.transpiledSource = source;
 
-					var depsSource = transpiledDepsExp.exec(source)[1] || "[]";
+					var depsMatches = transpiledDepsExp.exec(source);
+					var depsSource = depsMatches ? depsMatches[1] : "[]";
 					var deps = JSON.parse(depsSource.replace(singleQuoteExp, '"'));
 					load.metadata.deps = deps;
 

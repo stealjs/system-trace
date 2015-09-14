@@ -18,7 +18,11 @@ function setupBasics(assert){
 }
 
 function assertFailure(reason){
-	var doAssert = function(reason){
+	var doAssert = function(reason, error){
+		if(error) {
+			reason = reason + "\n" + error;
+		}
+
 		QUnit.ok(false, reason);
 	};
 	return reason ? doAssert.bind(null, "Failure") : doAssert(reason);
@@ -38,7 +42,7 @@ QUnit.test("Gets the dependencies of a module", function(){
 					"Correctly gets the dependencies for the main");
 
 	QUnit.deepEqual(loader.getDependencies("tests/basics/c"),
-					["tests/basics/d"],
+					["tests/basics/d", "tests/basics/f"],
 					"Correctly gets the dependencies for the c module");
 
 
