@@ -10,7 +10,7 @@ function applyTraceExtension(loader){
 
 	loader.getDependencies = function(moduleName){
 		var load = this.getModuleLoad(moduleName);
-		return load ? load.metadata.dependencies : false;
+		return load ? load.metadata.dependencies : undefined;
 	};
 	loader.getDependants = function(moduleName){
 		var deps = [];
