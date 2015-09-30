@@ -48,6 +48,13 @@ QUnit.test("Gets the dependencies of a module", function(){
 
 });
 
+QUnit.test("Returns false when a module is not in the graph", function(){
+	var loader = this.loader;
+
+	QUnit.equal(loader.getDependencies("test/basics/not_in_graph"), false,
+				"false is returned when the module is not in the graph");
+});
+
 QUnit.module("getDependants", {
 	setup: setupBasics
 });
