@@ -154,8 +154,6 @@ function applyTraceExtension(loader){
 	};
 }
 
-applyTraceExtension.name = "Trace";
-
 if(typeof System !== "undefined") {
 	applyTraceExtension(System);
 }
