@@ -1,5 +1,6 @@
 var QUnit = require("steal-qunit");
 var loader = require("@loader");
+var sinon = require("sinon");
 
 function makeLoader(){
 	this.loader = loader.clone();
@@ -160,4 +161,42 @@ QUnit.module("production", {
 
 QUnit.test("Loads normally", function(){
 	QUnit.ok(true, "it loaded!");
+});
+
+QUnit.module("eachModule", {
+	setup: function(assert){
+		makeLoader.call(this);
+
+		var modules = {
+			'module1': 'foo',
+			'module3': 'bar'
+		};
+
+		this.loader._traceData.loads = {
+			'module1': {},
+			'module2': {},
+			'module3': {}
+		};
+
+		this.loader.has = function(name) {
+			return !!modules[name];
+		};
+
+		this.loader.get = function(name) {
+			return modules[name];
+		};
+	}
+});
+
+QUnit.test("Calls callback", function(){
+	var callback = sinon.spy();
+	this.loader.eachModule(callback);
+
+	QUnit.equal(callback.getCall(0).args[0], 'module1', 'with correct moduleName for first call');
+	QUnit.equal(callback.getCall(0).args[1], 'foo', 'with correct module data for first call');
+
+	QUnit.equal(callback.getCall(1).args[0], 'module3', 'with correct moduleName for second call');
+	QUnit.equal(callback.getCall(1).args[1], 'bar', 'with correct module data for second call');
+
+	QUnit.equal(callback.callCount, 2, 'for each module');
 });
