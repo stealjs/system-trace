@@ -20,15 +20,13 @@
   },
   "homepage": "https://github.com/stealjs/system-trace",
   "devDependencies": {
-    "sinon": "^1.17.3",
     "steal": "^0.11.0",
     "steal-qunit": "^0.1.1",
     "testee": "^0.2.0"
   },
   "system": {
     "npmDependencies": [
-      "steal-qunit",
-      "sinon"
+      "steal-qunit"
     ]
   }
 }
