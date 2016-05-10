@@ -42,7 +42,8 @@ QUnit.test("Gets the dependencies of a module", function(){
 					"Correctly gets the dependencies for the main");
 
 	QUnit.deepEqual(loader.getDependencies("tests/basics/c"),
-					["tests/basics/d", "tests/basics/f"],
+					["tests/basics/d", "tests/basics/f",
+					"tests/basics/h"],
 					"Correctly gets the dependencies for the c module");
 
 
@@ -108,6 +109,10 @@ QUnit.test("Prevents a module from executing", function(){
 	var dDeps = loader.getDependencies("tests/basics/prevent_me").sort();
 	QUnit.deepEqual(dDeps, ["tests/basics/main", "tests/basics/prevent_es"],
 					"got the correct dependencies");
+
+	var cDeps = loader.getDependencies("tests/basics/c").sort();
+	QUnit.deepEqual(cDeps, ["tests/basics/d", "tests/basics/f",
+		"tests/basics/h"]);
 });
 
 QUnit.module("preventModuleExecution with babel", {
