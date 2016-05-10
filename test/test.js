@@ -53,6 +53,10 @@ QUnit.test("Gets the dependencies of a module", function(){
 	QUnit.deepEqual(loader.getDependencies("tests/basics/h"),
 					["tests/basics/j"],
 					"Correctly gets the dependencies for the h module");
+
+	QUnit.deepEqual(loader.getDependencies("tests/basics/j"), [],
+					"Correctly gets the dependencies for the j module");
+
 });
 
 QUnit.test("Returns undefined when a module is not in the graph", function(){
