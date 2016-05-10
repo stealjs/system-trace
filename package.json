@@ -1,6 +1,6 @@
 {
   "name": "system-trace",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Traces dependencies of a Loader",
   "main": "trace.js",
   "scripts": {
