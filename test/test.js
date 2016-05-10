@@ -43,10 +43,16 @@ QUnit.test("Gets the dependencies of a module", function(){
 
 	QUnit.deepEqual(loader.getDependencies("tests/basics/c"),
 					["tests/basics/d", "tests/basics/f",
-					"tests/basics/h"],
+					"tests/basics/g"],
 					"Correctly gets the dependencies for the c module");
 
+	QUnit.deepEqual(loader.getDependencies("tests/basics/g"),
+					["tests/basics/h"],
+					"Correctly gets the dependencies for the g module");
 
+	QUnit.deepEqual(loader.getDependencies("tests/basics/h"),
+					["tests/basics/j"],
+					"Correctly gets the dependencies for the h module");
 });
 
 QUnit.test("Returns undefined when a module is not in the graph", function(){
@@ -112,7 +118,7 @@ QUnit.test("Prevents a module from executing", function(){
 
 	var cDeps = loader.getDependencies("tests/basics/c").sort();
 	QUnit.deepEqual(cDeps, ["tests/basics/d", "tests/basics/f",
-		"tests/basics/h"]);
+		"tests/basics/g"]);
 });
 
 QUnit.module("preventModuleExecution with babel", {

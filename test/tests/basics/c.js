@@ -4,7 +4,7 @@ import hello from './world';
 
 import './d';
 import {default as foo} from "./f";
-import foof from './h';
+import foof from './g';
 // import bar from './fake';
 
 
