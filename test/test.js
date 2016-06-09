@@ -56,7 +56,19 @@ QUnit.test("Gets the dependencies of a module", function(){
 
 	QUnit.deepEqual(loader.getDependencies("tests/basics/j"), [],
 					"Correctly gets the dependencies for the j module");
+});
 
+QUnit.test("Ignores import statements within backticks", function(){
+	var loader = this.loader;
+
+	loader["import"]("tests/basics/str")
+	.then(function(){
+		QUnit.deepEqual(loader.getDependencies("tests/basics/str"), [],
+						"this module has no deps");
+	})
+	.then(start, start);
+
+	stop();
 });
 
 QUnit.test("Returns undefined when a module is not in the graph", function(){
