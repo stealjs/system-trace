@@ -2,10 +2,20 @@ var QUnit = require("steal-qunit");
 var loader = require("@loader");
 
 function makeLoader(){
+	var ext;
+	for(var i = 0, len = loader._extensions.length; i < len; i++) {
+		ext = loader._extensions[i];
+		if(ext.name === "applyTraceExtension") {
+			break;
+		}
+	}
+	loader._extensions.splice(i, 1);
+
 	this.loader = loader.clone();
 	this.loader.baseURL = "./";
 	this.loader.paths = loader.paths;
 	applyTraceExtension(this.loader);
+	loader._extensions.splice(i, 0, ext);
 }
 
 function setupBasics(assert){
