@@ -88,6 +88,37 @@ QUnit.test("Returns undefined when a module is not in the graph", function(){
 				"undefined is returned when the module is not in the graph");
 });
 
+QUnit.test("gets dependency below a commented out import #23", function(assert) {
+	var loader = this.loader;
+	var done = assert.async();
+
+	loader["import"]("tests/basics/k")
+		.then(function() {
+			assert.deepEqual(
+				loader.getDependencies("tests/basics/k"),
+				["tests/basics/b", "tests/basics/c", "tests/basics/d"],
+				"should not ignore dependencies below a commented out import"
+			);
+		})
+		.then(done);
+});
+
+
+QUnit.test("gets dependencies when there are comments between them #21", function(assert) {
+	var loader = this.loader;
+	var done = assert.async();
+
+	loader["import"]("tests/basics/l")
+		.then(function() {
+			assert.deepEqual(
+				loader.getDependencies("tests/basics/l"),
+				["tests/basics/h", "tests/basics/j"],
+				"should not ignore dependencies with comments between them"
+			);
+		})
+		.then(done);
+});
+
 QUnit.module("getDependants", {
 	setup: setupBasics
 });
