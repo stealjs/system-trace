@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/stealjs/system-trace.svg?branch=master)](https://travis-ci.org/stealjs/system-trace)
-[![npm version](https://badge.fury.io/js/system-trace.svg)](http://badge.fury.io/js/system-trace)
+[![npm version](https://badge.fury.io/js/system-trace.svg)](http://badge.fury.io/js/system-trace) [![Greenkeeper badge](https://badges.greenkeeper.io/stealjs/system-trace.svg)](https://greenkeeper.io/)
 
 # DEPRECATED
 The trace extension was merged into [StealJS core](https://github.com/stealjs/steal/pull/1016) and this repository will no longer be maintained.
